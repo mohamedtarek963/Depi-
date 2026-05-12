@@ -47,14 +47,12 @@ BEGIN
         INSERT INTO Gold.Dim_Modules_Catalog (
             Module_Key,
             module_presentation_length,
-            semester,
-            load_timestamp
-        )
+            semester
+            )
         SELECT
             code_module + '-' + code_presentation,
             module_presentation_length,
-            semester,
-            GETDATE()
+            semester
         FROM Silver.courses;
 
         SET @row_count = @@ROWCOUNT;
@@ -80,17 +78,15 @@ BEGIN
             assessment_type,
             [date],
             [weight],
-            is_final_exam,
-            load_timestamp
-        )
+            is_final_exam
+            )
         SELECT
             id_assessment,
             code_module + '-' + code_presentation,
             assessment_type,
             [date],
             [weight],
-            is_final_exam,
-            GETDATE()
+            is_final_exam
         FROM Silver.assessments;
 
         SET @row_count = @@ROWCOUNT;
@@ -120,8 +116,7 @@ BEGIN
             age_band,
             num_of_prev_attempts,
             studied_credits,
-            disability,
-            load_timestamp
+            disability
         )
         SELECT
             code_module + '-' + code_presentation + '-' + CAST(id_student AS VARCHAR),
@@ -133,8 +128,7 @@ BEGIN
             age_band,
             num_of_prev_attempts,
             studied_credits,
-            disability,
-            GETDATE()
+            disability
         FROM Silver.studentInfo;
 
         SET @row_count = @@ROWCOUNT;
@@ -159,16 +153,14 @@ BEGIN
             Module_Key,
             activity_type,
             week_from,
-            week_to,
-            load_timestamp
+            week_to
         )
         SELECT
             id_site,
             code_module + '-' + code_presentation,
             activity_type,
             week_from,
-            week_to,
-            GETDATE()
+            week_to
         FROM Silver.vle;
 
         SET @row_count = @@ROWCOUNT;
@@ -196,8 +188,7 @@ BEGIN
             date_unregistration,
             is_active,
             days_enrolled,
-            final_result,
-            load_timestamp
+            final_result
         )
         SELECT
             SR.code_module + '-' + SR.code_presentation + '-' + CAST(SR.id_student AS VARCHAR),
@@ -206,8 +197,7 @@ BEGIN
             SR.date_unregistration,
             SR.is_active,
             SR.days_enrolled,
-            SI.final_result,
-            GETDATE()
+            SI.final_result
         FROM Silver.studentRegistration SR
         LEFT JOIN Silver.studentInfo SI
             ON  SR.id_student        = SI.id_student
@@ -238,8 +228,7 @@ BEGIN
             date_submitted,
             score,
             weighted_score,
-            is_late_submission,
-            load_timestamp
+            is_late_submission
         )
         SELECT
             A.code_module + '-' + A.code_presentation + '-' + CAST(SA.id_student AS VARCHAR),
@@ -248,8 +237,7 @@ BEGIN
             SA.date_submitted,
             SA.score,
             SA.weighted_score,
-            SA.is_late_submission,
-            GETDATE()
+            SA.is_late_submission
         FROM Silver.studentAssessment SA
         INNER JOIN Silver.assessments A
             ON SA.id_assessment = A.id_assessment;
@@ -276,18 +264,16 @@ BEGIN
             Module_Key,
             id_site,
             [date],
-            sum_click,
-            load_timestamp
+            sum_click
         )
         SELECT
             code_module + '-' + code_presentation + '-' + CAST(id_student AS VARCHAR),
             code_module + '-' + code_presentation,
             id_site,
             [date],
-            sum_click,
-            GETDATE()
-        FROM Silver.studentVle;
-
+            SUM(sum_click)
+        FROM Silver.studentVle
+        GROUP BY code_module, code_presentation, id_student, id_site, [date];
         SET @row_count = @@ROWCOUNT;
         SET @total_rows += @row_count;
         PRINT 'SUCCESS: ' + CAST(@row_count AS VARCHAR) + ' rows loaded. (' + CAST(DATEDIFF(SECOND, @step_start, GETDATE()) AS VARCHAR) + 's)';
