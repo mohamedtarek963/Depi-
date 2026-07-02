@@ -17,7 +17,8 @@ Usage: EXEC Gold.load_Gold;
 BY\ Abdelrahman Ahmed
 =============================================================================== */
 GO
-
+USE oulad_warehouse;
+GO
 CREATE OR ALTER PROCEDURE Gold.load_Gold AS
 BEGIN
     SET NOCOUNT ON;
@@ -31,8 +32,16 @@ BEGIN
         PRINT '# GOLD LAYER REFRESH                            #';
         PRINT '# Started: ' + CONVERT(VARCHAR, @start_time, 120) + '         #';
         PRINT '##################################################';
-
-
+/* ===============================================================================
+        STEP 0: Clear old tables
+=============================================================================== */
+        DELETE FROM Gold.Dim_Modules_Catalog;
+        DELETE FROM Gold.Dim_Assessments_Info;
+        DELETE FROM Gold.Dim_Students_Profile;
+        DELETE FROM Gold.Dim_Vle_Resources;
+        DELETE FROM Gold.Fact_Enrollment;
+        DELETE FROM Gold.Fact_Student_Scores;
+        DELETE FROM Gold.Fact_Student_Vle_Clicks;
 /* ===============================================================================
         STEP 1: Dim_Modules_Catalog
 =============================================================================== */
@@ -42,7 +51,7 @@ BEGIN
         PRINT 'STEP 1 | LOADING: Silver.courses -> Gold.Dim_Modules_Catalog';
         PRINT '================================================';
 
-        TRUNCATE TABLE Gold.Dim_Modules_Catalog;
+        
 
         INSERT INTO Gold.Dim_Modules_Catalog (
             Module_Key,
@@ -70,7 +79,6 @@ BEGIN
         PRINT 'STEP 2 | LOADING: Silver.assessments -> Gold.Dim_Assessments_Info';
         PRINT '================================================';
 
-        TRUNCATE TABLE Gold.Dim_Assessments_Info;
 
         INSERT INTO Gold.Dim_Assessments_Info (
             id_assessment,
@@ -104,7 +112,7 @@ BEGIN
         PRINT 'STEP 3 | LOADING: Silver.studentInfo -> Gold.Dim_Students_Profile';
         PRINT '================================================';
 
-        TRUNCATE TABLE Gold.Dim_Students_Profile;
+
 
         INSERT INTO Gold.Dim_Students_Profile (
             Student_Key,
@@ -146,7 +154,7 @@ BEGIN
         PRINT 'STEP 4 | LOADING: Silver.vle -> Gold.Dim_Vle_Resources';
         PRINT '================================================';
 
-        TRUNCATE TABLE Gold.Dim_Vle_Resources;
+        
 
         INSERT INTO Gold.Dim_Vle_Resources (
             id_site,
@@ -179,7 +187,7 @@ BEGIN
         PRINT 'STEP 5 | LOADING: Silver.studentRegistration + Silver.studentInfo -> Gold.Fact_Enrollment';
         PRINT '================================================';
 
-        TRUNCATE TABLE Gold.Fact_Enrollment;
+        
 
         INSERT INTO Gold.Fact_Enrollment (
             Student_Key,
@@ -219,11 +227,10 @@ BEGIN
         PRINT 'STEP 6 | LOADING: Silver.studentAssessment -> Gold.Fact_Student_Scores';
         PRINT '================================================';
 
-        TRUNCATE TABLE Gold.Fact_Student_Scores;
+        
 
         INSERT INTO Gold.Fact_Student_Scores (
             Student_Key,
-            Module_Key,
             id_assessment,
             date_submitted,
             score,
@@ -232,7 +239,6 @@ BEGIN
         )
         SELECT
             A.code_module + '-' + A.code_presentation + '-' + CAST(SA.id_student AS VARCHAR),
-            A.code_module + '-' + A.code_presentation,
             SA.id_assessment,
             SA.date_submitted,
             SA.score,
@@ -257,18 +263,16 @@ BEGIN
         PRINT 'STEP 7 | LOADING: Silver.studentVle -> Gold.Fact_Student_Vle_Clicks';
         PRINT '================================================';
 
-        TRUNCATE TABLE Gold.Fact_Student_Vle_Clicks;
+        
 
         INSERT INTO Gold.Fact_Student_Vle_Clicks (
             Student_Key,
-            Module_Key,
             id_site,
             [date],
             sum_click
         )
         SELECT
             code_module + '-' + code_presentation + '-' + CAST(id_student AS VARCHAR),
-            code_module + '-' + code_presentation,
             id_site,
             [date],
             SUM(sum_click)
