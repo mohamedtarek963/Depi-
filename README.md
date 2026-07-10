@@ -9,7 +9,7 @@ An end-to-end data analytics project focused on student learning behavior, acade
 * Basmala Ehab Abd El-lateef
 * Abdallah Ashraf Abdalla
 * Nour yehia Zakaria
-* Abdulrhman Ahmed Ibrahim
+* Abdulrahman Ahmed Ibrahim
 
 ---
 
